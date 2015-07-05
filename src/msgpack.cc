@@ -220,7 +220,7 @@ v8_to_msgpack(Handle<Value> v8obj, msgpack_object *mo, msgpack_zone *mz, size_t 
 // This method is recursive. It will probably blow out the stack on objects
 // with extremely deep nesting.
 static Handle<Value>
-msgpack_to_v8(msgpack_object *mo) {
+msgpack_to_v8(msgpack_object *mo, bool use_binary) {
     switch (mo->type) {
     case MSGPACK_OBJECT_NIL:
         return NanNull();
@@ -248,22 +248,27 @@ msgpack_to_v8(msgpack_object *mo) {
         Local<Array> a = new_v8_obj<Array>(mo->via.array.size);
 
         for (uint32_t i = 0; i < mo->via.array.size; i++) {
-            a->Set(i, msgpack_to_v8(&mo->via.array.ptr[i]));
+            a->Set(i, msgpack_to_v8(&mo->via.array.ptr[i], use_binary));
         }
 
         return a;
     }
 
-    case MSGPACK_OBJECT_RAW:
-        return new_v8_obj<String>(mo->via.raw.ptr, mo->via.raw.size);
+    case MSGPACK_OBJECT_RAW: {
+        if (use_binary) {
+            return NanNewBufferHandle(mo->via.raw.ptr, mo->via.raw.size);
+        } else {
+            return new_v8_obj<String>(mo->via.raw.ptr, mo->via.raw.size);
+        }
+    }
 
     case MSGPACK_OBJECT_MAP: {
         Local<Object> o = new_v8_obj<Object>();
 
         for (uint32_t i = 0; i < mo->via.map.size; i++) {
             o->Set(
-                msgpack_to_v8(&mo->via.map.ptr[i].key),
-                msgpack_to_v8(&mo->via.map.ptr[i].val)
+                msgpack_to_v8(&mo->via.map.ptr[i].key, false),
+                msgpack_to_v8(&mo->via.map.ptr[i].val, use_binary)
             );
         }
 
@@ -333,6 +338,7 @@ static NAN_METHOD(unpack) {
     }
 
     Local<Object> buf = args[0]->ToObject();
+    bool use_binary = args[1]->BooleanValue();
 
     MsgpackZone mz;
     msgpack_object mo;
@@ -346,7 +352,7 @@ static NAN_METHOD(unpack) {
                 new_v8_obj<String>("bytes_remaining"),
                 new_v8_obj<Integer>(static_cast<int32_t>(Buffer::Length(buf) - off))
             );
-            NanReturnValue(msgpack_to_v8(&mo));
+            NanReturnValue(msgpack_to_v8(&mo, use_binary));
         } catch (MsgpackException e) {
             return NanThrowError(e.getThrownException());
         }
