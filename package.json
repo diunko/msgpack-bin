@@ -1,7 +1,7 @@
 {
 	"name": "msgpack-bin",
 	"description": "A space-efficient object serialization library for node.js",
-	"version": "0.2.6-3",
+	"version": "0.2.6-4",
 	"homepage": "https://github.com/diunko/msgpack-node",
 	"contributors": [
 		{
