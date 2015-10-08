@@ -44,12 +44,12 @@ exports.msgpack = {
     test.deepEqual('abcdef', msgpack.unpack(msgpack.pack('abcdef')));
     test.done();
   },
-//  'test unpacking a buffer' : function (test) {
-//    test.expect(1);
-//    var testBuffer = new Buffer([0x00, 0x01, 0x02]);
-//    test.deepEqual(testBuffer, msgpack.unpack(msgpack.pack(testBuffer), true));
-//    test.done();
-//  },
+ 'test unpacking a buffer' : function (test) {
+   test.expect(1);
+   var testBuffer = new Buffer([0x00, 0x01, 0x02]);
+   test.deepEqual(testBuffer, msgpack.unpack(msgpack.pack(testBuffer), true));
+   test.done();
+ },
   'test for numeric equality' : function (test) {
     test.expect(2);
     test.deepEqual(123, msgpack.unpack(msgpack.pack(123)));
@@ -106,6 +106,13 @@ exports.msgpack = {
     var object = {'a' : [1, 2, 3], 'b' : 'cdef', 'c' : {'nuts' : 'qqq'}};
     test.deepEqual(object, msgpack.unpack(msgpack.pack(object)));
     test.isObject(msgpack.unpack(msgpack.pack(object)));
+    test.done();
+  },
+  'test for object with buffers' : function (test) {
+    test.expect(2);
+    var object = {'a' : [1, 2, 3], 'b' : Buffer('cdef'), 'c' : {'nuts' : Buffer('qqq')}};
+    test.deepEqual(object, msgpack.unpack(msgpack.pack(object), true));
+    test.isObject(msgpack.unpack(msgpack.pack(object), true));
     test.done();
   },
   'test for 2^31 negative' : function (test) {
