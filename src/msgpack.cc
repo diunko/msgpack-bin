@@ -121,10 +121,10 @@ v8_to_msgpack(Handle<Value> v8obj, msgpack_object *mo, msgpack_zone *mz, size_t 
         }
     } else if (v8obj->IsString()) {
         mo->type = MSGPACK_OBJECT_RAW;
-        mo->via.raw.size = static_cast<uint32_t>(DecodeBytes(v8obj, UTF8));
+        mo->via.raw.size = static_cast<uint32_t>(Nan::DecodeBytes(v8obj, Nan::UTF8));
         mo->via.raw.ptr = (char*) msgpack_zone_malloc(mz, mo->via.raw.size);
 
-        DecodeWrite((char*)mo->via.raw.ptr, mo->via.raw.size, v8obj, UTF8);
+        Nan::DecodeWrite((char*)mo->via.raw.ptr, mo->via.raw.size, v8obj, Nan::UTF8);
 
     } else if (v8obj->IsDate()) {
         mo->type = MSGPACK_OBJECT_RAW;
@@ -132,10 +132,10 @@ v8_to_msgpack(Handle<Value> v8obj, msgpack_object *mo, msgpack_zone *mz, size_t 
         Handle<Function> func = Handle<Function>::Cast(date->Get(Nan::New<String>("toISOString").ToLocalChecked()));
         Handle<Value> argv[1] = {};
         Handle<Value> result = func->Call(date, 0, argv);
-        mo->via.raw.size = static_cast<uint32_t>(DecodeBytes(result, UTF8));
+        mo->via.raw.size = static_cast<uint32_t>(Nan::DecodeBytes(result, Nan::UTF8));
         mo->via.raw.ptr = (char*) msgpack_zone_malloc(mz, mo->via.raw.size);
 
-        DecodeWrite((char*)mo->via.raw.ptr, mo->via.raw.size, result, UTF8);
+        Nan::DecodeWrite((char*)mo->via.raw.ptr, mo->via.raw.size, result, Nan::UTF8);
     } else if (v8obj->IsArray()) {
         Local<Object> o = v8obj->ToObject();
         Local<Array> a = Local<Array>::Cast(o);
